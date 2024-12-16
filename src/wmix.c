@@ -1021,7 +1021,7 @@ void wmix_shmem_write_circle(WMixThread_Param *wmtp)
                                 (int16_t *)buff,                                          //混杂的数据,即 播音数据 + 人说话声音
                                 (int16_t *)buff,                                          //输出的数据,得 人说话声音
                                 frame_num,
-                                0); //评估回声时延
+                                WMIX_INTERVAL_MS/2); //评估回声时延
 
 #ifdef AEC_SYNC_SAVE_FILE
                             playPkgBuff_get(playPkgBuff, AEC_INTERVAL_MS);
@@ -3193,7 +3193,7 @@ void wmix_play_thread(WMixThread_Param *wmtp)
                                 (int16_t *)playBuff,
                                 (int16_t *)playBuff,
                                 frame_num,
-                                0); //WMIX_INTERVAL_MS/2);
+                                WMIX_INTERVAL_MS/2); // 测试，具体数值需要检查一下，不同系统不同定义，大差不差。
                         }
                     }
 #endif

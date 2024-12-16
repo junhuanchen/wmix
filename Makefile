@@ -1,4 +1,4 @@
-# cross:=arm-linux-gnueabihf
+cross:=aarch64-linux-gnu
 # cross:=arm-himix200-linux
 # cross:=arm-himix100-linux
 
@@ -151,24 +151,27 @@ libs: $(targetlib)
 libalsa:
 	@tar -xjf $(ROOT)/pkg/alsa-lib-1.1.9.tar.bz2 -C $(ROOT)/libs && \
 	cd $(ROOT)/libs/alsa-lib-1.1.9 && \
-	./configure --prefix=$(ROOT)/libs --host=$(host) && \
+	./configure --prefix=$(ROOT)/libs --build=$(host) && \
 	make -j4 && make install && \
 	cd - && \
 	rm $(ROOT)/libs/alsa-lib-1.1.9 -rf
 
-libmad:
-	@tar -xzf $(ROOT)/pkg/libmad-0.15.1b.tar.gz -C $(ROOT)/libs && \
-	cd $(ROOT)/libs/libmad-0.15.1b && \
-	./configure --prefix=$(ROOT)/libs --host=$(host) --enable-speed && \
-	sed -i 's/-fforce-mem//g' ./Makefile && \
-	make -j4 && make install && \
-	cd - && \
-	rm $(ROOT)/libs/libmad-0.15.1b -rf
+## 如果 arm 编译不出来，出现优化错误，可以借系统库来完成编译
+## apt install libmad0-dev
+
+# libmad:
+# 	@tar -xzf $(ROOT)/pkg/libmad-0.15.1b.tar.gz -C $(ROOT)/libs && \
+# 	cd $(ROOT)/libs/libmad-0.15.1b && \
+# 	./configure --prefix=$(ROOT)/libs --build=$(host) && \
+# 	sed -i 's/-fforce-mem//g' ./Makefile && \
+# 	make -j4 && make install && \
+# 	cd - && \
+# 	rm $(ROOT)/libs/libmad-0.15.1b -rf
 
 libfaac:
 	@tar -xzf $(ROOT)/pkg/faac-1.29.9.2.tar.gz -C $(ROOT)/libs && \
 	cd $(ROOT)/libs/faac-1.29.9.2 && \
-	./configure --prefix=$(ROOT)/libs --host=$(host) && \
+	./configure --prefix=$(ROOT)/libs --build=$(host) && \
 	make -j4 && make install && \
 	cd - && \
 	rm $(ROOT)/libs/faac-1.29.9.2 -rf
@@ -176,7 +179,7 @@ libfaac:
 libfaad:
 	@tar -xzf $(ROOT)/pkg/faad2-2.8.8.tar.gz -C $(ROOT)/libs && \
 	cd $(ROOT)/libs/faad2-2.8.8 && \
-	./configure --prefix=$(ROOT)/libs --host=$(host) && \
+	./configure --prefix=$(ROOT)/libs --build=$(host) && \
 	make -j4 && make install && \
 	cd - && \
 	rm $(ROOT)/libs/faad2-2.8.8 -rf
@@ -217,7 +220,7 @@ libwebrtcagc:
 libspeex:
 	@tar -xzf $(ROOT)/pkg/speex-1.2.0.tar.gz -C $(ROOT)/libs && \
 	cd $(ROOT)/libs/speex-1.2.0 && \
-	./configure --prefix=$(ROOT)/libs --host=$(host) && \
+	./configure --prefix=$(ROOT)/libs --build=$(host) && \
 	make -j4 && make install && \
 	cd - && \
 	rm $(ROOT)/libs/speex-1.2.0 -rf

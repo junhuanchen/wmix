@@ -16,7 +16,7 @@
 
 3. 主程序抛后台 (先拷贝 ./libs/lib/lib* 到 /usr/lib/ ), -d 表示打印debug信息
 
-* wmix -d &
+* export LD_LIBRARY_PATH=./libs/lib && ./wmix -d &
 
 4. 录音10秒到wav文件 (设备要具备录音条件)
 
