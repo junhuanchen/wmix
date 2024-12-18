@@ -182,8 +182,10 @@ int SNDWAV_ReadPcm(SNDPCMContainer_t *sndpcm, size_t frame_num)
     {
         ret = snd_pcm_readi(sndpcm->handle, data, count);
         //返回异常,recover处理
-        if (ret < 0)
-            ret = snd_pcm_recover(sndpcm->handle, ret, 0);
+        if (ret < 0) {
+            ret = snd_pcm_recover(sndpcm->handle, ret, 0); // TODO 录音也有可能漏音，但目前来看还好，可以留意。
+        }
+        //
         //其它问题处理
         if (ret == -EAGAIN || (ret >= 0 && (size_t)ret < count))
         {
@@ -229,6 +231,7 @@ int SNDWAV_ReadPcm(SNDPCMContainer_t *sndpcm, size_t frame_num)
  ******************************************************************************/
 int SNDWAV_WritePcm(SNDPCMContainer_t *sndpcm, size_t wcount)
 {
+    // printf("SNDWAV_WritePcm wcount: %d\r\n", wcount);
     int ret;
     int result = 0;
     uint8_t *data = sndpcm->data_buf;
@@ -240,12 +243,20 @@ int SNDWAV_WritePcm(SNDPCMContainer_t *sndpcm, size_t wcount)
     //     wcount = sndpcm->chunk_size;
     // }
 
+    // 当 ./wmixMsg -reset 重置会导致音频漏音，因为数据填充了后，异常 snd_pcm_recover 后音频数据还存在内部，此时需要控制音量消除这个漏音
+    static int old_volume = -1, old_reset = -1;
     while (wcount > 0)
     {
         ret = snd_pcm_writei(sndpcm->handle, data, wcount);
         //
-        if (ret < 0)
+        if (ret < 0) {
+            old_volume = main_wmix->volume;
+            old_reset = 30; // 设置 10-25 都可以听到一点漏音，30-40 都可以，影响不大。
+            wmix_volume(0);
             ret = snd_pcm_recover(sndpcm->handle, ret, 0);
+            // printf("snd_pcm_recover ret: %d\r\n", ret);
+            // memset(sndpcm->data_buf, 0, sndpcm->chunk_bytes);
+        }
         //
         if (ret == -EAGAIN || (ret >= 0 && (size_t)ret < wcount))
         {
@@ -275,6 +286,11 @@ int SNDWAV_WritePcm(SNDPCMContainer_t *sndpcm, size_t wcount)
             wcount -= ret;
             data += ret * sndpcm->bits_per_frame / 8;
         }
+    }
+    if (old_volume != -1 && --old_reset < 0)
+    {
+        wmix_volume(old_volume);
+        old_volume = old_reset = -1;
     }
     return result;
 }
@@ -3060,6 +3076,9 @@ void wmix_msg_thread(WMixThread_Param *wmtp)
 
 void wmix_play_thread(WMixThread_Param *wmtp)
 {
+    // memset(playPkgBuff, 0, WMIX_PKG_SIZE);
+    // memset(_playPkgBuff, 0, AEC_FIFO_PKG_NUM * WMIX_PKG_SIZE);
+    // _playPkgBuff_count = 0;
     WMix_Struct *wmix = wmtp->wmix;
     //for循环时指向目标字符串
     WMix_Point dist;

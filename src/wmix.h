@@ -66,7 +66,7 @@ typedef struct SNDPCMContainer
 #define WMIX_MSG_ID 'w'
 #define WMIX_MSG_BUFF_SIZE 128
 
-#define WMIX_INTERVAL_MS 20 //录播音包间隔ms, 必须10的倍数且>=10
+#define WMIX_INTERVAL_MS 20 //录播音包间隔ms, 必须10的倍数且>=10，10ms或20ms越小性能要求越高
 
 #if (WMIX_MODE == 0)
 
