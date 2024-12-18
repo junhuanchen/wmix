@@ -1014,6 +1014,7 @@ void wmix_shmem_write_circle(WMixThread_Param *wmtp)
                             wmix->webrtcPoint[WR_AEC] = aec_init(WMIX_CHANNELS, WMIX_FREQ, WMIX_INTERVAL_MS);
                         if (wmix->webrtcPoint[WR_AEC])
                         {
+                            // printf("aec_process3\n");
                             //开始转换
                             aec_process2(
                                 wmix->webrtcPoint[WR_AEC],
@@ -3187,13 +3188,14 @@ void wmix_play_thread(WMixThread_Param *wmtp)
                                 // p1[i] >>= 1;
                                 p2[i] += p1[i];
                             }
+                            // dont use this
                             aec_process2(
                                 wmix->webrtcPoint[WR_AEC],
                                 (int16_t *)fileBuff,
                                 (int16_t *)playBuff,
                                 (int16_t *)playBuff,
                                 frame_num,
-                                WMIX_INTERVAL_MS/2); // 测试，具体数值需要检查一下，不同系统不同定义，大差不差。
+                                WMIX_INTERVAL_MS/2);
                         }
                     }
 #endif

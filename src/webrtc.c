@@ -174,7 +174,7 @@ void vad_release(void *fp)
 #include "echo_control_mobile.h"
 
 // 切换 aec 和 aecm
-// #undef WMIX_WEBRTC_AEC // do this switch to AECM
+#undef WMIX_WEBRTC_AEC // do this switch to AECM
 
 #ifdef WMIX_WEBRTC_AEC
 #define AEC_FRAME_TYPE float
@@ -188,7 +188,7 @@ void vad_release(void *fp)
 #define AEC_FRAME_TYPE int16_t
 #define WebRtcAecX_Create(x) WebRtcAecm_Create(x)
 #define WebRtcAecX_Init(a, b, c) WebRtcAecm_Init(a, b)
-#define WebRtcAecX_set_config(x, y) (0)
+#define WebRtcAecX_set_config(x, y) WebRtcAecm_set_config(x, y), 0
 #define WebRtcAecX_BufferFarend(a, b, c) WebRtcAecm_BufferFarend(a, b, c)
 #define WebRtcAecX_Process(a, b, c, d, e, f) WebRtcAecm_Process(a, b, c, d, e, f)
 #define WebRtcAecX_Free(x) WebRtcAecm_Free(x)
@@ -222,12 +222,17 @@ void *aec_init(int chn, int freq, int intervalMs)
     if(freq > 16000)
         return NULL;
     as = (Aec_Struct *)calloc(1, sizeof(Aec_Struct));
-    AecConfig config = {
-        .nlpMode = kAecNlpAggressive,//kAecNlpModerate,
-        .skewMode = kAecFalse,
-        .metricsMode = kAecFalse,
-        .delay_logging = kAecFalse,
+    // AecConfig config = {
+    //     .nlpMode = kAecNlpAggressive,//kAecNlpModerate,
+    //     .skewMode = kAecTrue,
+    //     .metricsMode = kAecFalse,
+    //     .delay_logging = kAecFalse,
+    // };
+    AecmConfig config = {
+        .cngMode = 1,
+        .echoMode = 3
     };
+
     if (WebRtcAecX_Create(&as->aecInst) == 0)
     {
         if (WebRtcAecX_Init(as->aecInst, freq, freq) == 0)
