@@ -251,7 +251,7 @@ int SNDWAV_WritePcm(SNDPCMContainer_t *sndpcm, size_t wcount)
         //
         if (ret < 0) {
             old_volume = main_wmix->volume;
-            old_reset = 30; // 设置 10-25 都可以听到一点漏音，30-40 都可以，影响不大。
+            old_reset = 40; // 设置 10-25 都可以听到一点漏音，30-40 都可以，影响不大。
             wmix_volume(0);
             ret = snd_pcm_recover(sndpcm->handle, ret, 0);
             // printf("snd_pcm_recover ret: %d\r\n", ret);
@@ -1038,7 +1038,7 @@ void wmix_shmem_write_circle(WMixThread_Param *wmtp)
                                 (int16_t *)buff,                                          //混杂的数据,即 播音数据 + 人说话声音
                                 (int16_t *)buff,                                          //输出的数据,得 人说话声音
                                 frame_num,
-                                WMIX_INTERVAL_MS/2); //评估回声时延
+                                WMIX_INTERVAL_MS / 2); //评估回声时延
 
 #ifdef AEC_SYNC_SAVE_FILE
                             playPkgBuff_get(playPkgBuff, AEC_INTERVAL_MS);
