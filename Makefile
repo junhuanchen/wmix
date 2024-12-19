@@ -61,7 +61,7 @@ endif
 ifeq ($(MAKE_MP3),1)
 obj-wmix+=./src/id3.c ./src/id3.h
 obj-flags+= -lmad
-targetlib+= libmad
+# targetlib+= libmad ## apt install libmad0-dev
 endif
 
 # AAC LIB
@@ -158,7 +158,6 @@ libalsa:
 
 ## 如果 arm 编译不出来，出现优化错误，可以借系统库来完成编译
 ## apt install libmad0-dev
-
 # libmad:
 # 	@tar -xzf $(ROOT)/pkg/libmad-0.15.1b.tar.gz -C $(ROOT)/libs && \
 # 	cd $(ROOT)/libs/libmad-0.15.1b && \
