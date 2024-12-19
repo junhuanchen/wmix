@@ -244,15 +244,19 @@ int SNDWAV_WritePcm(SNDPCMContainer_t *sndpcm, size_t wcount)
     // }
 
     // 当 ./wmixMsg -reset 重置会导致音频漏音，因为数据填充了后，异常 snd_pcm_recover 后音频数据还存在内部，此时需要控制音量消除这个漏音
-    static int old_volume = -1, old_reset = -1;
+    static int old_volume = -1, old_rstime = -1;
     while (wcount > 0)
     {
         ret = snd_pcm_writei(sndpcm->handle, data, wcount);
         //
         if (ret < 0) {
-            old_volume = main_wmix->volume;
-            old_reset = 40; // 设置 10-25 都可以听到一点漏音，30-40 都可以，影响不大。
-            wmix_volume(0);
+            if (main_wmix->thread_reset)
+            {
+                main_wmix->thread_reset = 0;
+                old_volume = main_wmix->volume;
+                old_rstime = 50; // 设置 25 都可以听到一点漏音，30-40 都可以，影响不大。
+                wmix_volume(0);
+            }
             ret = snd_pcm_recover(sndpcm->handle, ret, 0);
             // printf("snd_pcm_recover ret: %d\r\n", ret);
             // memset(sndpcm->data_buf, 0, sndpcm->chunk_bytes);
@@ -287,10 +291,11 @@ int SNDWAV_WritePcm(SNDPCMContainer_t *sndpcm, size_t wcount)
             data += ret * sndpcm->bits_per_frame / 8;
         }
     }
-    if (old_volume != -1 && --old_reset < 0)
+    if (old_volume != -1 && --old_rstime < 0)
     {
         wmix_volume(old_volume);
-        old_volume = old_reset = -1;
+        old_volume = old_rstime = -1;
+        fprintf(stderr, "W-Error: reset done\r\n");
     }
     return result;
 }
@@ -2821,6 +2826,7 @@ void wmix_msg_thread(WMixThread_Param *wmtp)
             //复位
             case WMT_RESET:
                 wmix->loopWord += 1;
+                wmix->thread_reset = 1;
                 wmix->run = false;
                 break;
             //fifo录音wav流

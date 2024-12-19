@@ -181,6 +181,7 @@ typedef struct
     uint8_t loopWordRtp;    //全局rtp循环标志
     uint32_t tick;          //播放指针启动至今走过的字节数
     //
+    uint32_t thread_reset;  //线程退出，触发重置，重置消除异常漏音
     uint32_t thread_sys;    //线程计数 增加线程时+1 减少时-1 等于0时全部退出
     uint32_t thread_record; //线程计数 增加线程时+1 减少时-1 等于0时全部退出
     uint32_t thread_play;   //线程计数 增加线程时+1 减少时-1 等于0时全部退出
