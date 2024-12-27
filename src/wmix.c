@@ -38,6 +38,7 @@ static WMix_Struct *main_wmix = NULL;
 
 static void signal_callback(int signo)
 {
+    printf("signal_callback %d\r\n", signo);
     if (SIGINT == signo || SIGTERM == signo)
     {
         wmix_exit(main_wmix);
@@ -277,7 +278,8 @@ int SNDWAV_WritePcm(SNDPCMContainer_t *sndpcm, size_t wcount)
         }
         else if (ret < 0)
         {
-            fprintf(stderr, "W-Error snd_pcm_writei: [%s]", snd_strerror(ret));
+            // fprintf(stderr, "W-Error snd_pcm_writei: [%s]", snd_strerror(ret));
+            // if(main_wmix) main_wmix->want_stop = true;
             return -1;
         }
         //
@@ -483,7 +485,9 @@ void wmix_alsa_release(SNDPCMContainer_t *playback)
 {
     if (playback)
     {
-        snd_pcm_drain(playback->handle);
+        // snd_pcm_drain：对于播放，会先等待所有挂起没有传输完的数据帧先播完，才会去关闭PCM。
+        // snd_pcm_drop：对于播放，会立即停止PCM，剩余的数据帧则直接丢弃不要。
+        snd_pcm_drop(playback->handle);
         //
         if (playback->data_buf)
             free(playback->data_buf);
@@ -1265,6 +1269,7 @@ void wmix_shmem_write_circle(WMixThread_Param *wmtp)
 #if (WMIX_MODE == 0)
     if (wmix->recordback)
     {
+        // printf("wmix_alsa_release 2\r\n");
         wmix_alsa_release(wmix->recordback);
         wmix->recordback = NULL;
     }
@@ -1355,6 +1360,7 @@ void wmix_shmem_read_circle(WMixThread_Param *wmtp)
 
 void wmix_load_wav_fifo_thread(WMixThread_Param *wmtp)
 {
+    printf("%s:%d\r\n", __func__, __LINE__);
     char *path = (char *)&wmtp->param[4];
     //
     uint8_t chn = wmtp->param[0];
@@ -1469,10 +1475,12 @@ void wmix_load_wav_fifo_thread(WMixThread_Param *wmtp)
     if (rdceIsMe)
         wmtp->wmix->reduceMode = 1;
     free(wmtp);
+    printf("%s:%d\r\n", __func__, __LINE__);
 }
 
 void wmix_record_wav_fifo_thread(WMixThread_Param *wmtp)
 {
+    printf("%s:%d\r\n", __func__, __LINE__);
     char *path = (char *)&wmtp->param[4];
     //
     uint8_t chn = wmtp->param[0];
@@ -1587,10 +1595,12 @@ void wmix_record_wav_fifo_thread(WMixThread_Param *wmtp)
     if (wmtp->param)
         free(wmtp->param);
     free(wmtp);
+    printf("%s:%d\r\n", __func__, __LINE__);
 }
 
 void wmix_record_wav_thread(WMixThread_Param *wmtp)
 {
+    printf("%s:%d\r\n", __func__, __LINE__);
     char *path = (char *)&wmtp->param[6];
     //
     uint8_t chn = wmtp->param[0];
@@ -1723,11 +1733,13 @@ void wmix_record_wav_thread(WMixThread_Param *wmtp)
     if (wmtp->param)
         free(wmtp->param);
     free(wmtp);
+    printf("%s:%d\r\n", __func__, __LINE__);
 }
 
 #if (WMIX_AAC)
 void wmix_record_aac_thread(WMixThread_Param *wmtp)
 {
+    printf("%s:%d\r\n", __func__, __LINE__);
     char *path = (char *)&wmtp->param[6];
     //
     uint8_t chn = wmtp->param[0];
@@ -1873,10 +1885,12 @@ void wmix_record_aac_thread(WMixThread_Param *wmtp)
     if (wmtp->param)
         free(wmtp->param);
     free(wmtp);
+    printf("%s:%d\r\n", __func__, __LINE__);
 }
 
 void wmix_rtp_send_aac_thread(WMixThread_Param *wmtp)
 {
+    printf("%s:%d\r\n", __func__, __LINE__);
     char *path = (char *)&wmtp->param[6];
     char *msgPath;
     key_t msg_key;
@@ -2062,10 +2076,12 @@ void wmix_rtp_send_aac_thread(WMixThread_Param *wmtp)
     if (wmtp->param)
         free(wmtp->param);
     free(wmtp);
+    printf("%s:%d\r\n", __func__, __LINE__);
 }
 
 void wmix_rtp_recv_aac_thread(WMixThread_Param *wmtp)
 {
+    printf("%s:%d\r\n", __func__, __LINE__);
     char *path = (char *)&wmtp->param[6];
     char *msgPath;
     key_t msg_key;
@@ -2238,6 +2254,7 @@ void wmix_rtp_recv_aac_thread(WMixThread_Param *wmtp)
     if (rdceIsMe)
         wmtp->wmix->reduceMode = 1;
     free(wmtp);
+    printf("%s:%d\r\n", __func__, __LINE__);
 }
 #endif //if(WMIX_AAC)
 
@@ -2246,6 +2263,7 @@ static SocketStruct *rtp_sr = NULL;
 #endif
 void wmix_rtp_send_pcma_thread(WMixThread_Param *wmtp)
 {
+    printf("%s:%d\r\n", __func__, __LINE__);
     char *path = (char *)&wmtp->param[6];
     char *msgPath;
     key_t msg_key;
@@ -2449,10 +2467,12 @@ void wmix_rtp_send_pcma_thread(WMixThread_Param *wmtp)
     if (wmtp->param)
         free(wmtp->param);
     free(wmtp);
+    printf("%s:%d\r\n", __func__, __LINE__);
 }
 
 void wmix_rtp_recv_pcma_thread(WMixThread_Param *wmtp)
 {
+    printf("%s:%d\r\n", __func__, __LINE__);
     char *path = (char *)&wmtp->param[6];
     char *msgPath;
     key_t msg_key;
@@ -2645,10 +2665,12 @@ void wmix_rtp_recv_pcma_thread(WMixThread_Param *wmtp)
     if (rdceIsMe)
         wmtp->wmix->reduceMode = 1;
     free(wmtp);
+    printf("%s:%d\r\n", __func__, __LINE__);
 }
 
 void wmix_load_audio_thread(WMixThread_Param *wmtp)
 {
+    printf("%s:%d\r\n", __func__, __LINE__);
     char *name = (char *)wmtp->param;
     uint16_t len = strlen((char *)wmtp->param);
     //
@@ -2743,10 +2765,12 @@ void wmix_load_audio_thread(WMixThread_Param *wmtp)
     if (wmtp->param)
         free(wmtp->param);
     free(wmtp);
+    printf("%s:%d\r\n", __func__, __LINE__);
 }
 
 void wmix_msg_thread(WMixThread_Param *wmtp)
 {
+    printf("%s:%d\r\n", __func__, __LINE__);
     WMix_Struct *wmix = wmtp->wmix;
     WMix_Msg msg;
     ssize_t ret;
@@ -2787,6 +2811,8 @@ void wmix_msg_thread(WMixThread_Param *wmtp)
     //接收来信
     while (wmix->run)
     {
+        if (wmix->want_stop) break;
+        
         memset(&msg, 0, sizeof(WMix_Msg));
         ret = msgrcv(wmix->msg_fd, &msg, WMIX_MSG_BUFF_SIZE, 0, IPC_NOWAIT); //返回队列中的第一个消息 非阻塞方式
         if (ret > 0)
@@ -3076,12 +3102,14 @@ void wmix_msg_thread(WMixThread_Param *wmtp)
     }
     //线程计数
     wmix->thread_sys -= 1;
+    printf("%s:%d\r\n", __func__, __LINE__);
 }
 
 // #define AEC_FILE_STREAM_TEST //回声消除,文件流干扰测试
 
 void wmix_play_thread(WMixThread_Param *wmtp)
 {
+    printf("%s:%d\r\n", __func__, __LINE__);
     // memset(playPkgBuff, 0, WMIX_PKG_SIZE);
     // memset(_playPkgBuff, 0, AEC_FIFO_PKG_NUM * WMIX_PKG_SIZE);
     // _playPkgBuff_count = 0;
@@ -3124,6 +3152,10 @@ void wmix_play_thread(WMixThread_Param *wmtp)
     //wmix 运行标志
     while (wmix->run)
     {
+        // printf("run %d\r\n", wmix->run);
+        
+        if (wmix->want_stop) break;
+        
         //播放标志,在 wmix_msg_thread 中判断没有播放任务时置 false
         if (wmix->playRun || wmix->rwTest)
         {
@@ -3310,17 +3342,21 @@ void wmix_play_thread(WMixThread_Param *wmtp)
 #endif
     //
     if (wmix->debug)
-        printf("wmix_play_thread exit\r\n");
+    {
+        // printf("wmix_play_thread exit\r\n");
+    }
     //
     if (wmtp->param)
         free(wmtp->param);
     free(wmtp);
     //线程计数
     wmix->thread_sys -= 1;
+    printf("%s:%d\r\n", __func__, __LINE__);
 }
 
 void wmix_exit(WMix_Struct *wmix)
 {
+    printf("%s:%d\r\n", __func__, __LINE__);
     int timeout;
     if (wmix)
     {
@@ -3340,6 +3376,7 @@ void wmix_exit(WMix_Struct *wmix)
 #if (WMIX_MODE == 1)
         hiaudio_exit();
 #else
+        // printf("wmix_alsa_release 3\r\n");
         if (wmix->playback)
             wmix_alsa_release(wmix->playback);
         if (wmix->recordback)
@@ -3348,10 +3385,12 @@ void wmix_exit(WMix_Struct *wmix)
         // pthread_mutex_destroy(&wmix->lock);
         free(wmix);
     }
+    printf("%s:%d\r\n", __func__, __LINE__);
 }
 
 WMix_Struct *wmix_init(void)
 {
+    printf("%s:%d\r\n", __func__, __LINE__);
     WMix_Struct *wmix = NULL;
 
     //路径检查 //F_OK 是否存在 R_OK 是否有读权限 W_OK 是否有写权限 X_OK 是否有执行权限
@@ -3381,6 +3420,8 @@ WMix_Struct *wmix_init(void)
 
     // pthread_mutex_init(&wmix->lock, NULL);
 
+
+    wmix->want_stop = false;
     wmix->run = true;
     wmix->reduceMode = 1;
 
@@ -3412,6 +3453,7 @@ WMix_Struct *wmix_init(void)
     signal(SIGINT, signal_callback);
     signal(SIGTERM, signal_callback);
 
+    printf("%s:%d\r\n", __func__, __LINE__);
     return wmix;
 }
 
@@ -4519,8 +4561,9 @@ void help(char *argv0)
 void _wmix_loop(WMixThread_Param *wmtp)
 {
     sleep(1);
-    while (1)
+    while (!wmtp->want_stop)
     {
+        // printf("want_stop %d\r\n", wmtp->want_stop);
         //--- 重启 ---
         if (wmtp->wmix->run == 0 &&
             wmtp->wmix->thread_sys == 0 &&
@@ -4565,9 +4608,11 @@ void wmix_getSignal(int id)
 }
 int main(int argc, char **argv)
 {
+    printf("%s:%d\r\n", __func__, __LINE__);
+    system("killall arecord");
+    system("killall aplay");
     int i, volume = 10, volumeMic = 10;
     char *p, *path = NULL;
-
     //传入参数处理
     if (argc > 1)
     {
@@ -4625,8 +4670,9 @@ int main(int argc, char **argv)
         }
 
         sleep(1);
-        while (1)
+        while (!main_wmix->want_stop)
         {
+            // printf("want_stop %d\r\n", main_wmix->want_stop);
             //--- 重启 ---
             if (main_wmix->run == 0 &&
                 main_wmix->thread_sys == 0 &&
@@ -4645,6 +4691,7 @@ int main(int argc, char **argv)
             delayus(500000);
         }
     }
+    printf("%s:%d\r\n", __func__, __LINE__);
     return 0;
 }
 #endif

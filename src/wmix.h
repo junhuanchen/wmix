@@ -174,6 +174,7 @@ typedef struct
     WMix_Point head, tail; //当前缓冲区读写指针
     // pthread_mutex_t lock;//互斥锁
     //
+    bool want_stop;
     bool run;               //全局正常运行标志
     uint8_t loopWord;       //全局播放循环标志(每个播放线程的循环标志都要与该值一致,否则循环结束,用于打断全局播放)
     uint8_t loopWordRecord; //全局录音循环标志
