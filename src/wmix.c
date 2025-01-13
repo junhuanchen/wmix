@@ -147,13 +147,26 @@ void wmix_volumeMic(uint8_t value)
     //找到Pcm对应的element
     pcm_element = snd_mixer_first_elem(mixer);                    // 取得第一个 element，也就是 Master
     snd_mixer_selem_set_capture_volume_range(pcm_element, 0, 10); // 设置音量范围：0-100之间
+    
+    // 设置左右声道音量
+    snd_mixer_selem_set_capture_volume(pcm_element, SND_MIXER_SCHN_FRONT_LEFT, volume_value);
+    snd_mixer_selem_set_capture_volume(pcm_element, SND_MIXER_SCHN_FRONT_RIGHT, volume_value);
+
     //设置左右声道音量
     snd_mixer_selem_set_capture_volume_all(pcm_element, volume_value);
     //检查设置
     snd_mixer_selem_get_capture_volume(pcm_element, SND_MIXER_SCHN_FRONT_LEFT, &volume_value); //获取音量
+    printf("l val: %d\r\n", volume_value);
+    snd_mixer_selem_get_capture_volume(pcm_element, SND_MIXER_SCHN_FRONT_RIGHT, &volume_value); //获取音量
+    printf("r val: %d\r\n", volume_value);
     //处理事件
     snd_mixer_handle_events(mixer);
     snd_mixer_close(mixer);
+
+    char tmp[64] = { 0 };
+    sprintf(tmp, "amixer set \"Mic\" capture %d%%", volume_value * 10);
+    system(tmp);
+
 #endif
     printf("wmix volume capture: %ld\r\n", volume_value);
 }

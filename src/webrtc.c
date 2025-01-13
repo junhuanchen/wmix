@@ -228,9 +228,11 @@ void *aec_init(int chn, int freq, int intervalMs)
     //     .metricsMode = kAecFalse,
     //     .delay_logging = kAecFalse,
     // };
+    // 1 启用 CNG：当启用 CNG 时，AECM 会在背景噪声中生成舒适的噪声，以减少静音期间的突兀感，提高音频的自然度。
+    // 4 MOST_AGGRESSIVE：最激进模式，对回声的处理最为激进，适用于极端环境，但可能会引入更多的处理噪声。
     AecmConfig config = {
         .cngMode = 1,
-        .echoMode = 3
+        .echoMode = 4
     };
 
     if (WebRtcAecX_Create(&as->aecInst) == 0)
