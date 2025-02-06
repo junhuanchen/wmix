@@ -5,7 +5,10 @@ cross:=aarch64-linux-gnu
 # ps. 树莓派 MAKE_WEBRTC_AEC 库要用 cross:=arm-linux-gnueabihf 来编译
 
 # 置1时编译外部alsa库,否则使用编译器自带
-MAKE_ALSA=1
+MAKE_ALSA=1 # 对于 嵌入式 则需要编译生成的版本
+
+# cross:=aarch64-linux-gnu # 注释掉交叉编译
+# MAKE_ALSA=0 # 在 pc 上可以使用内置版本，意味着不使用编译版本
 
 # 选择启用mp3播放支持 0/关 1/启用
 MAKE_MP3=1
